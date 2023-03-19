@@ -7,7 +7,7 @@
     android:id="@+id/linearLayout"
     tools:context=".MainActivity"
     android:orientation="vertical"
-    android:background="@color/green">
+    android:background="@drawable/android_gradient_list">
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

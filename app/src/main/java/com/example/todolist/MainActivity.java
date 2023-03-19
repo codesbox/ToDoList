@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.example.todolist.databinding.ActivityMainBinding;
+import com.example.todolist.db.MyDbManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +26,22 @@ public class MainActivity extends AppCompatActivity implements CardInterface, An
     CardAdapter cardAdapter;
     List<Card> cardList = new ArrayList<Card>();
 
+    private MyDbManager myDbManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(R.layout.activity_main);
 
+        myDbManager = new MyDbManager(this);
+
+
         //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
         //AnimationDrawable animationDrawable = (AnimationDrawable) linearLayout.getBackground();
         //animationDrawable.setEnterFadeDuration(2000);
         //animationDrawable.setExitFadeDuration(4000);
         //animationDrawable.start();
-
-
 
         addItem = findViewById(R.id.add_item);
         addBut = findViewById(R.id.add_button);
@@ -48,13 +52,21 @@ public class MainActivity extends AppCompatActivity implements CardInterface, An
                 String text = addItem.getText().toString();
                 Card card = new Card(text);
                 cardAdapter.addCard(card);
+
             }
         });
+        cardList = myDbManager.getFromDb();
         cardAdapter = new CardAdapter(this, cardList, this);
         recView.setLayoutManager(new LinearLayoutManager(this));
         recView.setAdapter(cardAdapter);
         new ItemTouchHelper(new CardTouchHelper(this)).attachToRecyclerView(recView);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        myDbManager.openDb();
     }
 
     @Override
@@ -74,5 +86,19 @@ public class MainActivity extends AppCompatActivity implements CardInterface, An
     public void onSwiped(int direction, int pos) {
         cardList.remove(pos);
         cardAdapter.notifyItemRemoved(pos);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        myDbManager.deleteAllDb();
+        myDbManager.insertToDb(cardList);
+    }
+
+    @Override
+    protected void onDestroy() {
+        myDbManager.closeDb();
+        super.onDestroy();
+
     }
 }
